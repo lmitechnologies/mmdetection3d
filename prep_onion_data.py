@@ -42,7 +42,7 @@ class bbox3d:
         self.dx, self.dy, self.dz = dt['dimensions']['length'], dt['dimensions']['width'], dt['dimensions']['height']
         self.yaw = dt['rotations']['z']
         self.label = dt['name']
-        # self.z -= self.dz/2 # bottom-view coordinates
+        self.z -= self.dz/2 # bottom-view coordinates
         
     def tolist(self):
         return [self.x, self.y, self.z, self.dx, self.dy, self.dz, self.yaw]
@@ -104,11 +104,25 @@ def map_to_dict(sample_idx:int, path_bin:str, bboxes:list, class_to_id:dict, num
     dt['sample_idx'] = sample_idx
     dt['lidar_points'] = {'lidar_path': f'{path_bin}','num_pts_feats':num_feats}
     dt['instances'] = []
+    # dummy data
+    dt['images'] = {'R0_rect':np.eye(4),'CAM2':{}}
+    dt['images']['CAM2']['height'] = 0
+    dt['images']['CAM2']['width'] = 0
+    dt['images']['CAM2']['cam2img'] = np.eye(4)
+    dt['images']['CAM2']['lidar2cam'] = np.eye(4)
+    dt['images']['CAM2']['lidar2img'] = np.eye(4)
     
     for bbox in bboxes:
         tmp = {
-            'gt_bboxes_3d':bbox.tolist(),
-            'gt_labels_3d':class_to_id[bbox.label]
+            'bbox_3d':bbox.tolist(),
+            'bbox_label_3d':class_to_id[bbox.label],
+            # dummy info
+            'bbox':[0]*4,
+            'bbox_label':class_to_id[bbox.label],
+            'truncated':0,
+            'occluded':0,
+            'alpha':0,
+            'score':0,
         }
         dt['instances'].append(tmp)
     return dt
@@ -122,11 +136,11 @@ if __name__ == '__main__':
     path_out = 'data/onion'
     categories = 'root,stem' # must match with METAINFO in onion_dataset.py
     
-    metainfo = {'classes':{}}
+    metainfo = {'categories':{}}
     idx = 0
     classes = categories.split(',')
     for cat in classes:
-        metainfo['classes'].update({
+        metainfo['categories'].update({
             cat:idx
         })
         idx += 1
@@ -144,11 +158,11 @@ if __name__ == '__main__':
     list_val = []
     annots_train = {
         'metainfo':metainfo,
-        'data_list':[]
+        'data_list':[],
     }
     annots_val = {
         'metainfo':metainfo,
-        'data_list':[]
+        'data_list':[],
     }
     stats = {c:collections.defaultdict(list) for c in classes}
     final_range = np.array([np.inf,np.inf,np.inf,-np.inf,-np.inf,-np.inf])
@@ -188,7 +202,7 @@ if __name__ == '__main__':
         write_to_bin(points, os.path.join(tmp_out,fname+'.bin'))
         
         # create annotation dicts
-        annot = map_to_dict(i,fname+'.bin',bboxes,metainfo['classes'],points.shape[1])
+        annot = map_to_dict(i,fname+'.bin',bboxes,metainfo['categories'],points.shape[1])
         
         # assign fname to train/val sets
         if p in valset:
@@ -199,7 +213,7 @@ if __name__ == '__main__':
             annots_train['data_list'].append(annot)
     
     # logs        
-    logger.info(metainfo['classes'])
+    logger.info(metainfo['categories'])
     for c in classes:
         logger.info(f"class {c}'s avg z: {np.mean(stats[c]['z'])}")
         logger.info(f"class {c}'s avg dx,dy,dz: {[np.mean(stats[c]['dx']),np.mean(stats[c]['dy']),np.mean(stats[c]['dz'])]}")

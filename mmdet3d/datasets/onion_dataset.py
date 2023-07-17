@@ -37,6 +37,7 @@ class OnionDataset(Det3DDataset):
 
         # filter the gt classes not used in training
         ann_info = self._remove_dontcare(ann_info)
-        gt_bboxes_3d = LiDARInstance3DBoxes(ann_info['gt_bboxes_3d'],origin=[0.5,0.5,0.5])
+        gt_bboxes_3d = LiDARInstance3DBoxes(ann_info['gt_bboxes_3d'])
         ann_info['gt_bboxes_3d'] = gt_bboxes_3d
         return ann_info
+    

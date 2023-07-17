@@ -55,7 +55,7 @@ train_dataloader = dict(
     sampler=dict(type='DefaultSampler', shuffle=True),
     dataset=dict(
         type='RepeatDataset',
-        times=2,
+        times=200,
         dataset=dict(
             type=dataset_type,
             data_root=data_root,
@@ -83,9 +83,12 @@ val_dataloader = dict(
         metainfo=metainfo,
         box_type_3d='LiDAR'))
 val_evaluator = dict(
-    type='KittiMetric',
+    type='OnionMetric',
     ann_file=data_root + 'annotation_val.pkl',  # specify your validation pkl info
     metric='bbox')
+
+test_dataloader = val_dataloader
+test_evaluator = val_evaluator
 
 vis_backends = [dict(type='LocalVisBackend')]
 visualizer = dict(
