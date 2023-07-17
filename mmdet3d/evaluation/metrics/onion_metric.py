@@ -391,8 +391,8 @@ class OnionMetric(BaseMetric):
                     anno['location'].append(box[:3])
                     anno['rotation_y'].append(box[6])
                     anno['score'].append(score)
-                print(f"pred location: {anno['location'].tolist()}")
-                print(f"pred dimensions: {anno['dimensions'].tolist()}")
+                    # print(f"pred location: {box[:3].tolist()}")
+                    # print(f"pred dimension: {box[3:6].tolist()}")
                 anno = {k: np.stack(v) for k, v in anno.items()}
             else:
                 anno = {
@@ -607,7 +607,7 @@ class OnionMetric(BaseMetric):
         P2 = box_preds.tensor.new_tensor(P2)
 
         if isinstance(box_preds, LiDARInstance3DBoxes):
-            box_preds_camera = box_preds.convert_to(Box3DMode.CAM, lidar2cam)
+            box_preds_camera = box_preds #.convert_to(Box3DMode.CAM, lidar2cam)
             box_preds_lidar = box_preds
         elif isinstance(box_preds, CameraInstance3DBoxes):
             box_preds_camera = box_preds
