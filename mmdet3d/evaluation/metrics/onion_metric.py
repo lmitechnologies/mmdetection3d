@@ -391,8 +391,8 @@ class OnionMetric(BaseMetric):
                     anno['location'].append(box[:3])
                     anno['rotation_y'].append(box[6])
                     anno['score'].append(score)
-                print(f"pred location: {anno['location']}")
-                print(f"pred dimensions: {anno['dimensions']}")
+                print(f"pred location: {anno['location'].tolist()}")
+                print(f"pred dimensions: {anno['dimensions'].tolist()}")
                 anno = {k: np.stack(v) for k, v in anno.items()}
             else:
                 anno = {

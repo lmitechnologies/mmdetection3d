@@ -1,5 +1,5 @@
 import numpy as np
-from pypcd import pypcd
+import open3d
 import os
 import json
 import logging
@@ -49,16 +49,13 @@ class bbox3d:
           
 
 def load_pcd(path_pcd):
-    pcd_data = pypcd.PointCloud.from_path(path_pcd)
-    points = np.zeros([pcd_data.width, 4], dtype=np.float32)
-    points[:, 0] = pcd_data.pc_data['x'].copy()
-    points[:, 1] = pcd_data.pc_data['y'].copy()
-    points[:, 2] = pcd_data.pc_data['z'].copy()
-    if len(pcd_data.fields)>3:
-        rgb_key = pcd_data.fields[-1]
-        points[:, 3] = pcd_data.pc_data[rgb_key].copy().astype(np.float32)
-    else:
-        points = points[:,:3]
+    pcd = open3d.io.read_point_cloud(path_pcd)
+    xyz = np.asarray(pcd.points)
+    colors = np.asarray(pcd.colors) #grayscale
+    # print(colors.max())
+    points = np.zeros([xyz.shape[0], 4], dtype=np.float32)
+    points[:,:3] = xyz.copy()
+    points[:,3] = colors[:,0].copy()
     return points
 
 
