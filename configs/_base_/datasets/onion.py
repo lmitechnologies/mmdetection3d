@@ -1,8 +1,6 @@
 # dataset settings
 dataset_type = 'OnionDataset'
 data_root = 'data/onion/'
-load_dim = 4
-use_dim = 4
 class_names = ['root', 'stem']  # replace with your dataset class
 point_cloud_range = [-40, -44, 3, 40, 44, 83]  # adjust according to your dataset
 input_modality = dict(use_lidar=True, use_camera=False)
@@ -12,8 +10,8 @@ train_pipeline = [
     dict(
         type='LoadPointsFromFile',
         coord_type='LIDAR',
-        load_dim=load_dim,  # replace with your point cloud data dimension
-        use_dim=use_dim),  # replace with the actual dimension used in training and inference
+        load_dim=4,  # replace with your point cloud data dimension
+        use_dim=4),  # replace with the actual dimension used in training and inference
     dict(
         type='LoadAnnotations3D',
         with_bbox_3d=True,
@@ -40,13 +38,13 @@ test_pipeline = [
     dict(
         type='LoadPointsFromFile',
         coord_type='LIDAR',
-        load_dim=load_dim,  # replace with your point cloud data dimension
-        use_dim=use_dim),
+        load_dim=4,  # replace with your point cloud data dimension
+        use_dim=4),
     dict(type='Pack3DDetInputs', keys=['points'])
 ]
 # construct a pipeline for data and gt loading in show function
 eval_pipeline = [
-    dict(type='LoadPointsFromFile', coord_type='LIDAR', load_dim=load_dim, use_dim=use_dim),
+    dict(type='LoadPointsFromFile', coord_type='LIDAR', load_dim=4, use_dim=4),
     dict(type='Pack3DDetInputs', keys=['points']),
 ]
 train_dataloader = dict(

@@ -74,7 +74,6 @@ class OnionMetric(BaseMetric):
             'the end.'
 
         self.submission_prefix = submission_prefix
-        print(self.submission_prefix)
         self.default_cam_key = default_cam_key
         self.backend_args = backend_args
 
@@ -140,8 +139,8 @@ class OnionMetric(BaseMetric):
                         kitti_annos['score'].append(instance['score'])
                     for name in kitti_annos:
                         kitti_annos[name] = np.array(kitti_annos[name])
-                    print(f"GT locations: {kitti_annos['location']}")
-                    print(f"GT dimensions: {kitti_annos['dimensions']}")
+                    # print_log(f"GT locations: {kitti_annos['location']}")
+                    # print_log(f"GT dimensions: {kitti_annos['dimensions']}")
                 data_annos[i]['kitti_annos'] = kitti_annos
         return data_annos
 
@@ -391,8 +390,6 @@ class OnionMetric(BaseMetric):
                     anno['location'].append(box[:3])
                     anno['rotation_y'].append(box[6])
                     anno['score'].append(score)
-                    # print(f"pred location: {box[:3].tolist()}")
-                    # print(f"pred dimension: {box[3:6].tolist()}")
                 anno = {k: np.stack(v) for k, v in anno.items()}
             else:
                 anno = {
@@ -440,6 +437,10 @@ class OnionMetric(BaseMetric):
             mmengine.dump(det_annos, out)
             print(f'Result is saved to {out}.')
 
+        # for anno in det_annos:
+        #     print(f"pred locations: {anno['location']}")
+        #     print(f"pred dimensions: {anno['dimensions']}")
+        #     print(f"scores: {anno['score']}")
         return det_annos
 
     def bbox2result_kitti2d(
