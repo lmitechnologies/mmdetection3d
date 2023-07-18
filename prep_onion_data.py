@@ -9,7 +9,7 @@ import pickle
 import collections
 
 
-logging.basicConfig(level=logging.NOTSET)
+logging.basicConfig()
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
@@ -37,20 +37,30 @@ class bbox3d:
         s5 = f'yaw: {self.yaw}\n'
         return s1+s2+s3+s4+s5
         
-    def load_dt(self, dt:dict):
+    def load_dt(self, dt:dict, to_meter=True):
         self.x, self.y, self.z = dt['centroid']['x'], dt['centroid']['y'], dt['centroid']['z']
         self.dx, self.dy, self.dz = dt['dimensions']['length'], dt['dimensions']['width'], dt['dimensions']['height']
         self.yaw = dt['rotations']['z']
         self.label = dt['name']
         self.z -= self.dz/2 # bottom-view coordinates
+        # cm -> m
+        if to_meter:
+            self.x /= 100
+            self.y /= 100
+            self.z /= 100
+            self.dx /= 100
+            self.dy /= 100
+            self.dz /= 100
         
     def tolist(self):
         return [self.x, self.y, self.z, self.dx, self.dy, self.dz, self.yaw]
           
 
-def load_pcd(path_pcd):
+def load_pcd(path_pcd, to_meter=True):
     pcd = open3d.io.read_point_cloud(path_pcd)
     xyz = np.asarray(pcd.points)
+    if to_meter:
+        xyz /= 100
     colors = np.asarray(pcd.colors) #grayscale
     # print(colors.max())
     points = np.zeros([xyz.shape[0], 4], dtype=np.float32)
@@ -72,7 +82,7 @@ def write_to_bin(points, path_out):
         f.write(points.tobytes())
 
         
-def load_label(path_json):
+def load_label(path_json, to_meter=True):
     bboxes = []
     with open(path_json,'r') as f:
         dt = json.load(f)
@@ -80,7 +90,7 @@ def load_label(path_json):
         fname = dt['filename']
         for ob in dt['objects']:
             box3d = bbox3d()
-            box3d.load_dt(ob)
+            box3d.load_dt(ob, to_meter)
             box3d.fname = fname
             logger.debug(box3d)
             bboxes.append(box3d)
@@ -129,9 +139,10 @@ def map_to_dict(sample_idx:int, path_bin:str, bboxes:list, class_to_id:dict, num
 if __name__ == '__main__':
     path_jsons = 'raw_data/labels_bp'
     path_pcds = 'raw_data/2023-06-20'
-    val_percentage = 0.1
+    val_percentage = 0
     path_out = 'data/onion'
     categories = 'root,stem' # must match with METAINFO in onion_dataset.py
+    cm_to_m = False
     
     metainfo = {'categories':{}}
     idx = 0
@@ -147,8 +158,11 @@ if __name__ == '__main__':
     random.shuffle(paths)
     train_len = int(len(paths)*(1-val_percentage))
     val_len = len(paths)-train_len
-    if not train_len or not val_len:
-        raise Exception('after train-val split, the number of training or validation samples is zero')
+    if not train_len:
+        raise Exception('after train-val split, the number of training samples is zero')
+    if not val_len:
+        logger.warning('the number of validation samples is zero')
+    logger.info(f'number of train and test samples: {train_len} and {val_len}')
     valset = set(paths[train_len:])
     
     list_train = []
@@ -168,7 +182,7 @@ if __name__ == '__main__':
         fname = os.path.splitext(fname)[0]
         
         # load labels
-        bboxes = load_label(p)
+        bboxes = load_label(p,cm_to_m)
         
         # get stats of labels
         for box in bboxes:
@@ -187,7 +201,7 @@ if __name__ == '__main__':
             continue
         
         # load pointcloud
-        points = load_pcd(os.path.join(path_pcds, fname+'.pcd'))
+        points = load_pcd(os.path.join(path_pcds, fname+'.pcd'), cm_to_m)
         # get pcd range in the format of [xmin,ymin,zmin,xmax,ymax,zmax]
         range = get_pcd_range(points)
         final_range[:3] = np.min([final_range[:3],range[:3]],axis=0)
@@ -214,9 +228,10 @@ if __name__ == '__main__':
     for c in classes:
         logger.info(f"class {c}'s avg z: {np.mean(stats[c]['z'])}")
         logger.info(f"class {c}'s avg dx,dy,dz: {[np.mean(stats[c]['dx']),np.mean(stats[c]['dy']),np.mean(stats[c]['dz'])]}")
-    logger.info(f'actual final range: {final_range}')
-    final_range = np.concatenate([np.floor(final_range[:3]),np.ceil(final_range[3:])],axis=0)
-    logger.info(f'final range: {final_range}')
+    if cm_to_m:
+        logger.info(f'actual final range: {np.round(final_range,2)}')
+    else:
+        logger.info(f'actual final range: {np.round(final_range)}')
     
     # write out
     tmp_out = os.path.join(path_out, 'ImageSets')
@@ -224,13 +239,13 @@ if __name__ == '__main__':
     with open(os.path.join(tmp_out,'train.txt'),'w') as f:
         for fname in list_train:
             f.write(f'{fname}\n')
-    with open(os.path.join(tmp_out,'val.txt'),'w') as f:
-        for fname in list_val:
-            f.write(f'{fname}\n')
-            
     with open(os.path.join(path_out,'annotation_train.pkl'),'wb') as f:
         pickle.dump(annots_train, f)
     
-    with open(os.path.join(path_out,'annotation_val.pkl'),'wb') as f:
-        pickle.dump(annots_val, f)
+    if len(list_val):
+        with open(os.path.join(tmp_out,'val.txt'),'w') as f:
+            for fname in list_val:
+                f.write(f'{fname}\n')
+        with open(os.path.join(path_out,'annotation_val.pkl'),'wb') as f:
+            pickle.dump(annots_val, f)
         

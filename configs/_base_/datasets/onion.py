@@ -11,7 +11,7 @@ train_pipeline = [
         type='LoadPointsFromFile',
         coord_type='LIDAR',
         load_dim=4,  # replace with your point cloud data dimension
-        use_dim=4),  # replace with the actual dimension used in training and inference
+        use_dim=3),  # replace with the actual dimension used in training and inference
     dict(
         type='LoadAnnotations3D',
         with_bbox_3d=True,
@@ -22,7 +22,7 @@ train_pipeline = [
         translation_std=[1.0, 1.0, 0.5],
         global_rot_range=[0.0, 0.0],
         rot_range=[-0.78539816, 0.78539816]),
-    dict(type='RandomFlip3D', flip_ratio_bev_horizontal=0.5),
+    dict(type='RandomFlip3D', flip_ratio_bev_horizontal=0.5,flip_ratio_bev_vertical=0.5),
     dict(
         type='GlobalRotScaleTrans',
         rot_range=[-0.78539816, 0.78539816],
@@ -39,12 +39,12 @@ test_pipeline = [
         type='LoadPointsFromFile',
         coord_type='LIDAR',
         load_dim=4,  # replace with your point cloud data dimension
-        use_dim=4),
+        use_dim=3),
     dict(type='Pack3DDetInputs', keys=['points'])
 ]
 # construct a pipeline for data and gt loading in show function
 eval_pipeline = [
-    dict(type='LoadPointsFromFile', coord_type='LIDAR', load_dim=4, use_dim=4),
+    dict(type='LoadPointsFromFile', coord_type='LIDAR', load_dim=4, use_dim=3),
     dict(type='Pack3DDetInputs', keys=['points']),
 ]
 train_dataloader = dict(
@@ -75,7 +75,7 @@ val_dataloader = dict(
         type=dataset_type,
         data_root=data_root,
         data_prefix=dict(pts='points'),
-        ann_file='annotation_val.pkl',  # specify your validation pkl info
+        ann_file='annotation_train.pkl',  # specify your validation pkl info
         pipeline=test_pipeline,
         modality=input_modality,
         test_mode=True,
@@ -83,7 +83,7 @@ val_dataloader = dict(
         box_type_3d='LiDAR'))
 val_evaluator = dict(
     type='OnionMetric',
-    ann_file=data_root + 'annotation_val.pkl',  # specify your validation pkl info
+    ann_file=data_root + 'annotation_train.pkl',  # specify your validation pkl info
     metric='bbox')
 
 test_dataloader = val_dataloader

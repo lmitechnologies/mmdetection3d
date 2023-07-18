@@ -17,7 +17,7 @@ model = dict(
             max_voxels=(16000, 40000))),
     voxel_encoder=dict(
         type='PillarFeatureNet',
-        in_channels=4,
+        in_channels=3,
         feat_channels=[64],
         with_distance=False,
         voxel_size=voxel_size,
@@ -52,7 +52,7 @@ model = dict(
                 [-40, -44, 52.8, 40, 44, 52.8],
             ],
             sizes=[[14, 12.5, 11.5], [15.2, 16.2, 15.7]],
-            rotations=[0, 0.5],
+            rotations=[0, 0.1],
             reshape_out=False),
         diff_rad_by_sin=True,
         bbox_coder=dict(type='DeltaXYZWLHRBBoxCoder'),
@@ -91,8 +91,8 @@ model = dict(
     test_cfg=dict(
         use_rotate_nms=True,
         nms_across_levels=False,
-        nms_thr=0.01,
+        nms_thr=0.1,
         score_thr=0.1,
         min_bbox_size=0,
         nms_pre=100,
-        max_num=20))
+        max_num=5))
