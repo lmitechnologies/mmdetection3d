@@ -137,8 +137,8 @@ def map_to_dict(sample_idx:int, path_bin:str, bboxes:list, class_to_id:dict, num
         
             
 if __name__ == '__main__':
-    path_jsons = 'raw_data/labels_bp'
-    path_pcds = 'raw_data/2023-06-20'
+    path_jsons = 'raw_data/labels_2023-07-18'
+    path_pcds = 'raw_data/2023-07-18'
     val_percentage = 0
     path_out = 'data/onion'
     categories = 'root,stem' # must match with METAINFO in onion_dataset.py
@@ -228,10 +228,11 @@ if __name__ == '__main__':
     for c in classes:
         logger.info(f"class {c}'s avg z: {np.mean(stats[c]['z'])}")
         logger.info(f"class {c}'s avg dx,dy,dz: {[np.mean(stats[c]['dx']),np.mean(stats[c]['dy']),np.mean(stats[c]['dz'])]}")
+    logger.info(f'actual final range: {final_range}')
     if cm_to_m:
-        logger.info(f'actual final range: {np.round(final_range,2)}')
+        logger.info(f'rounded final range: {np.round(final_range,2)}')
     else:
-        logger.info(f'actual final range: {np.round(final_range)}')
+        logger.info(f'rounded final range: {np.round(final_range)}')
     
     # write out
     tmp_out = os.path.join(path_out, 'ImageSets')

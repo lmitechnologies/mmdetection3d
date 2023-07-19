@@ -378,13 +378,13 @@ class OnionMetric(BaseMetric):
                     anno['name'].append(class_names[int(label)])
                     anno['truncated'].append(0.0)
                     anno['occluded'].append(0)
-                    # if pred_box_type_3d == CameraInstance3DBoxes:
-                    #     anno['alpha'].append(-np.arctan2(box[0], box[2]) +
-                    #                          box[6])
-                    # elif pred_box_type_3d == LiDARInstance3DBoxes:
-                    #     anno['alpha'].append(
-                    #         -np.arctan2(-box_lidar[1], box_lidar[0]) + box[6])
-                    anno['alpha'].append(0)
+                    if pred_box_type_3d == CameraInstance3DBoxes:
+                        anno['alpha'].append(-np.arctan2(box[0], box[2]) +
+                                             box[6])
+                    elif pred_box_type_3d == LiDARInstance3DBoxes:
+                        anno['alpha'].append(
+                            -np.arctan2(-box_lidar[1], box_lidar[0]) + box[6])
+                    # anno['alpha'].append(0)
                     anno['bbox'].append(bbox)
                     anno['dimensions'].append(box[3:6])
                     anno['location'].append(box[:3])
@@ -440,7 +440,7 @@ class OnionMetric(BaseMetric):
         # for anno in det_annos:
         #     print(f"pred locations: {anno['location']}")
         #     print(f"pred dimensions: {anno['dimensions']}")
-        #     print(f"scores: {anno['score']}")
+        #     print(f"scores: {anno['score']}\n")
         return det_annos
 
     def bbox2result_kitti2d(

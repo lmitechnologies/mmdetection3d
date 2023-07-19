@@ -483,7 +483,7 @@ def eval_class(gt_annos,
 
     rets = calculate_iou_partly(dt_annos, gt_annos, metric, num_parts)
     overlaps, parted_overlaps, total_dt_num, total_gt_num = rets
-    print(overlaps, parted_overlaps, total_dt_num, total_gt_num)
+    # print(overlaps, parted_overlaps, total_dt_num, total_gt_num)
     N_SAMPLE_PTS = 41
     num_minoverlap = len(min_overlaps)
     num_class = len(current_classes)

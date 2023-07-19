@@ -4,7 +4,7 @@ _base_ = [
 ]
 
 voxel_size = [0.1, 0.1, 0.1]  # adjust according to your dataset
-point_cloud_range = [-40, -44, 3, 40, 44, 83]  # adjust according to your dataset
+point_cloud_range = [-40, -44, 3, 40, 44, 85]  # adjust according to your dataset
 model = dict(
     type='VoxelNet',
     data_preprocessor=dict(
@@ -17,7 +17,7 @@ model = dict(
             max_voxels=(16000, 40000))),
     voxel_encoder=dict(
         type='PillarFeatureNet',
-        in_channels=3,
+        in_channels=4,
         feat_channels=[64],
         with_distance=False,
         voxel_size=voxel_size,
@@ -25,7 +25,7 @@ model = dict(
     # the `output_shape` should be adjusted according to `point_cloud_range`
     # and `voxel_size`
     middle_encoder=dict(
-        type='PointPillarsScatter', in_channels=64, output_shape=[880, 800, 800]),
+        type='PointPillarsScatter', in_channels=64, output_shape=[880, 800, 820]),
     backbone=dict(
         type='SECOND',
         in_channels=64,
@@ -48,11 +48,11 @@ model = dict(
         anchor_generator=dict(
             type='AlignedAnchor3DRangeGenerator',
             ranges=[
-                [-40, -44, 56.6, 40, 44, 56.6],
-                [-40, -44, 52.8, 40, 44, 52.8],
+                [-40, -44, 43.8, 40, 44, 43.8],
+                [-40, -44, 39.9, 40, 44, 39.9],
             ],
-            sizes=[[14, 12.5, 11.5], [15.2, 16.2, 15.7]],
-            rotations=[0, 0.1],
+            sizes=[[11.9, 10.6, 11.1], [13.4, 14.2, 12.9]], #length, width, height
+            rotations=[0, 0.5],
             reshape_out=False),
         diff_rad_by_sin=True,
         bbox_coder=dict(type='DeltaXYZWLHRBBoxCoder'),
